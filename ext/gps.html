@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+	<meta name="viewport" content="initial-scale=1.0, user-scalable=no" />
+	<script type="text/javascript" src="http://api.map.baidu.com/api?v=1.5&ak=YWdGplhYjUGQ3GtpKNeuTM2S"></script>
+	<script type="text/javascript" src="qwebchannel.js"></script>
+	<style type="text/css">
+		body, html, #allmap{
+		width: 100%;
+		height: 100%;
+		overflow: hidden;
+		margin:0;
+		font-family:"΢���ź�";
+		}
+	</style>
+	<title>map_drone</title>
+</head>
+<body>
+	<div id="allmap"></div>
+</body>
+</html>
+<script type="text/javascript">
+	
+	//数据准备
+	var points = [];//原始点信息数组
+	var bPoints = [];//百度化坐标数组,用于更新显示范围。
+	//var b = new BMap.Point(117.262424, 31.843408);
+	//var longtitude = b.lng;
+	//var latitude = a.lat;
+	//在轨迹上创建图标，并添加点击事件显示轨迹点信息。points,数组。
+	function addMarker(points) {
+	    var pointsLen = points.length;
+	    if(pointsLen==0){
+	        return;
+	    }
+	    var myIcon = new BMap.Icon("track.ico",new BMap.Size(5,5),{
+	        offset: new BMap.Size(5, 5)
+		});
+		//创建标准对象并添加到地图
+		for(var i = 0;i <pointsLen;i++){
+			var point = new BMap.Point(points[i].lng,points[i].lat);
+			var marker = new BMap.Marker(point, {icon: myIcon});
+			map.addOverlay(marker);
+			}
+	}
+
+	//添加线
+	function addLine(points){  
+
+		var linePoints = [],pointsLen = points.length,i,polyline;  
+		if(pointsLen == 0){  
+			return;
+		}
+        // 创建标注对象并添加到地图
+		for(i = 0;i <pointsLen;i++){  
+			linePoints.push(new BMap.Point(points[i].lng,points[i].lat));  
+		}  
+
+		polyline = new BMap.Polyline(linePoints, {strokeColor:"red", strokeWeight:2, strokeOpacity:0.5}); //创建折线
+		map.addOverlay(polyline);   //增加折线
+	}
+
+	//随机生成新的点，加入到轨迹中
+	function dynamicLine(){
+	    pyjs.getGps(function (returnValue) {
+	               var b = new BMap.Point(117.262424, 31.843408);
+                   //var lng = b.lng+returnValue[0];
+                   //var lat = b.lat+returnValue[1];
+                   var lng = returnValue[0];
+                   var lat = returnValue[1];
+                   var id = getRandom(1000);
+		           var point = {"lng":lng,"lat":lat,"status":1,"id":id}
+		           var newLinePoints = [];
+		           var len;
+		           points.push(point);
+		           bPoints.push(new BMap.Point(lng,lat));
+		           len = points.length;
+		           newLinePoints = points.slice(len-2, len);//最后两个点来画线
+                   addLine(newLinePoints);//增加轨迹线
+		           setZoom(bPoints);
+		           setTimeout(dynamicLine, 1000);
+                });
+		
+	}  
+
+	// ��ȡ�����  
+	function getRandom(n){  
+		return Math.floor(Math.random()*n+1)  
+	}  
+
+	//根据点信息实时更新地图显示范围，让轨迹完整显示，设置新的中心点和显示级别
+	//更新，设置不是每次增加点都重新设置显示范围。因为有可能会想放大了看。
+	function setZoom(bPoints){  
+		var view = map.getViewport(eval(bPoints));
+		if(map.oldView !=JSON.stringify(view)){
+		    var mapZoom = view.zoom;
+		    var centerPoint = view.center;
+		    map.centerAndZoom(centerPoint,mapZoom);
+		    map.oldView = JSON.stringify(view);
+		}
+	}  
+
+	//地图操作开始
+	var map = new BMap.Map("allmap");    
+
+	map.centerAndZoom(new BMap.Point(117.262424, 31.843408), 19);  // 初始显示
+	map.centerAndZoom( "�Ϸ�");
+	map.setCurrentCity("�Ϸ�");          //����Ϊ�Ϸ�
+	map.addControl(new BMap.MapTypeControl()); //����ק  
+	map.enableScrollWheelZoom(true);  //滚轮放大缩小
+	setTimeout(dynamicLine,1000);
+
+</script>
+
+<script language="javascript">
+	window.onload = function (){
+	       self.resizeTo(500,500);
+	       self.moveTo(200,200);
+           new QWebChannel(qt.webChannelTransport, function (channel) {
+               window.pyjs = channel.objects.pyjs;
+            });
+
+	}
+</script>

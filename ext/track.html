@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+	<meta name="viewport" content="initial-scale=1.0, user-scalable=no" />
+    <script type="text/javascript" src="http://api.map.baidu.com/api?v=2.0&ak=BSqE4vH3tIEPPEDAQHCEvclRwn6VjoDt"></script>
+    <script type="text/javascript" src="qwebchannel.js"></script>
+    <style type="text/css">
+		html{height:100%}
+		body{height:100%;margin:0px;padding:0px}
+		#container{height:100%;margin: 20px;}
+	</style>
+    <title>Drone Map</title>
+</head>
+<body>
+     <div id="container"></div>
+</body>
+</html>
+<script type="text/javascript">
+     window.onload = function() {
+         new QWebChannel(qt.webChannelTransport,function(channel) {
+         window.pyjs=channel.objects.pyjs;
+         });
+     }
+     var points = [];
+     var bPoints = [];
+     var map = new BMap.Map("container");
+     map.centerAndZoom(new BMap.Point(117.262424, 31.843408),19);
+     map.enableScrollWheelZoom();
+</script>
